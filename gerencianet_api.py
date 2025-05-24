@@ -6,7 +6,7 @@ import uuid
 
 
 def get_access_token():
-    url = "https://api-pix.gerencianet.com.br/oauth/token"
+    url = "https://pix-h.api.efipay.com.br/oauth/token"
     client_id = os.getenv("GERENCIANET_CLIENT_ID")
     client_secret = os.getenv("GERENCIANET_CLIENT_SECRET")
 
