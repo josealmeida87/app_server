@@ -35,7 +35,7 @@ def create_pix_charge(value, client_name, txid=None):
     }
 
     response = requests.put(
-        f"https://api-pix.gerencianet.com.br/v2/cob/{txid}",
+        f"https://pix-h.api.efipay.com.br/v2/cob/{txid}",
         headers={
             "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
@@ -46,7 +46,7 @@ def create_pix_charge(value, client_name, txid=None):
 
     if response.status_code == 200:
         qr_response = requests.post(
-            f"https://api-pix.gerencianet.com.br/v2/loc/{response.json()['loc']['id']}/qrcode",
+            f"https://pix-h.api.efipay.com.br/v2/loc/{response.json()['loc']['id']}/qrcode",
             headers={"Authorization": f"Bearer {access_token}"},
             cert=(os.getenv("CERT_PATH"), os.getenv("KEY_PATH"))
         )
