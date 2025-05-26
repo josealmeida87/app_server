@@ -3,7 +3,9 @@ import requests
 import os
 from datetime import datetime, timedelta
 import uuid
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def get_access_token():
     url = "https://pix-h.api.efipay.com.br/oauth/token"
