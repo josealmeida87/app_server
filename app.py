@@ -1,31 +1,82 @@
-
+import sys
 from flask import Flask, request, jsonify
-from dotenv import load_dotenv
-from firebase_config import init_firebase
+from models import atualizar_status_cobranca_por_txid
 from gerencianet_api import create_pix_charge
 from models import save_charge, get_charges
 import os
-
-
-load_dotenv()
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 app = Flask(__name__)
-db = init_firebase()
 
 
 @app.route("/create_charge", methods=["POST"])
 def create_charge():
-    data = request.json
-    uid = data["uid"]
-    value = float(data["value"])
-    name = data["name"]
-    charge = create_pix_charge(value, name)
-    if "error" in charge:
-        return jsonify(charge), 400
-    save_charge(db, uid, charge)
-    return jsonify(charge)
+    try:
+        data = request.json
+        uid = data["uid"]
+        value = float(data["value"])
+        name = data["name"]
+        desc_cobranca = data["solicitacaoPagador"]
+        identificador = data["cpf"]
+        id_token = data.get("id_token")
+        cliente_id = data["cliente_id"]
+        charge = create_pix_charge(value, name, desc_cobranca, identificador)
+        if charge.get("status") == "ATIVA" and "txid" in charge:
+            save_charge(uid, id_token, cliente_id, charge)
+            return jsonify({
+                "mensagem": "Cobrança criada com sucesso",
+                "txid": charge["txid"],
+                "valor": charge["valor"],
+                "status": charge["status"],
+                "br_code": charge["br_code"],
+                "nome": charge["nome"],
+                "qr_code_image": charge["qr_code_image"],
+                "location": charge["location"],
+                "vencimento": charge["vencimento"].isoformat()
+            }), 201
+
+        return jsonify(charge)
+
+        # return jsonify({"error": "Falha ao criar cobrança", "detalhes": res}), 400
+
+    except Exception as e:
+        return jsonify({"error": "Erro interno do servidor", "detalhes": str(e)}), 500
 
 
 @app.route("/charges/<uid>", methods=["GET"])
-def list_charges(uid):
-    charges = get_charges(db, uid)
+def list_charges(uid, id_token, cliente_id):
+    charges = get_charges(uid, id_token, cliente_id)
     return jsonify(charges)
+
+
+@app.route("/webhook/efi", methods=["POST"])
+def efi_webhook():
+    try:
+        data = request.get_json()
+        print("[WEBHOOK] Dados recebidos:", data)
+
+        pix = data.get("pix", [])
+        if not pix:
+            return jsonify({"mensagem": "Sem dados de pagamento."}), 200
+
+        for evento in pix:
+            txid = evento.get("txid")
+            valor = evento.get("valor")
+            horario = evento.get("horario")
+            print(f"[WEBHOOK] Pagamento recebido: TXID={txid} | Valor={valor} | Horário={horario}")
+
+            if txid:
+                sucesso = atualizar_status_cobranca_por_txid(txid, novo_status="pago")
+                if not sucesso:
+                    print(f"[WEBHOOK] Não foi possível atualizar cobrança com TXID: {txid}")
+            else:
+                print("[WEBHOOK] Evento sem txid.")
+
+        return jsonify({"mensagem": "Webhook processado com sucesso."}), 200
+
+    except Exception as e:
+        print("Erro no webhook:", e)
+        return jsonify({"error": "Erro interno no servidor", "detalhes": str(e)}), 500
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
