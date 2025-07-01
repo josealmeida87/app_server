@@ -12,8 +12,8 @@ key_path = os.getenv("homol_private_key.pem")
 
 def get_access_token():
     url = "https://pix-h.api.efipay.com.br/oauth/token"
-    client_id = os.getenv("SANDBOX_CLIENT_ID")
-    client_secret = os.getenv("SANDBOX_CLIENT_SECRET")
+    client_id = os.getenv("CLIENT_ID")
+    client_secret = os.getenv("CLIENT_SECRET")
 
     response = requests.post(
         url,
