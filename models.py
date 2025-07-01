@@ -2,12 +2,15 @@ import os
 import sys
 import requests
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from firebase.firebase_auth import PROJECT_ID
+# from firebase.firebase_auth import PROJECT_ID
+from dotenv import load_dotenv
 from datetime import datetime
+
+load_dotenv()
 
 
 def save_charge(uid, id_token, cliente_id, charge_data):
-    project_id = PROJECT_ID
+    project_id = os.getenv(PROJECT_ID)
     txid = charge_data["txid"]
     url = (f"https://firestore.googleapis.com/v1/projects/{project_id}"
            f"/databases/(default)/documents/meus_clientes/{uid}/clientes_do_usuario/{cliente_id}/cobrancas/{txid}")
