@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-cert_path = os.getenv("homol_certificate.pem")
-key_path = os.getenv("homol_private_key.pem")
+cert_path = os.getenv(CERT_PATH)
+key_path = os.getenv(KEY_PATH)
 
 
 def get_access_token():
