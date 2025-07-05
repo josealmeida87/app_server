@@ -1,10 +1,9 @@
-import sys
+
 from flask import Flask, request, jsonify
 from models import atualizar_status_cobranca_por_txid
 from gerencianet_api import create_pix_charge
-from models import save_charge#, get_charges
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from models import save_charge #, get_charges
+
 app = Flask(__name__)
 
 
