@@ -2,7 +2,7 @@ import sys
 from flask import Flask, request, jsonify
 from models import atualizar_status_cobranca_por_txid
 from gerencianet_api import create_pix_charge
-from models import save_charge, get_charges
+from models import save_charge#, get_charges
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 app = Flask(__name__)
@@ -21,7 +21,8 @@ def create_charge():
         cliente_id = data["cliente_id"]
         charge = create_pix_charge(value, name, desc_cobranca, identificador)
         if charge.get("status") == "ATIVA" and "txid" in charge:
-            save_charge(uid, id_token, cliente_id, charge)
+            tes = save_charge(uid, id_token, cliente_id, charge)
+            print(tes)
             return jsonify({
                 "mensagem": "Cobrança criada com sucesso",
                 "txid": charge["txid"],
@@ -42,10 +43,10 @@ def create_charge():
         return jsonify({"error": "Erro interno do servidor", "detalhes": str(e)}), 500
 
 
-@app.route("/charges/<uid>", methods=["GET"])
-def list_charges(uid, id_token, cliente_id):
-    charges = get_charges(uid, id_token, cliente_id)
-    return jsonify(charges)
+# @app.route("/charges/<uid>", methods=["GET"])
+# def list_charges(uid, id_token, cliente_id):
+#     charges = get_charges(uid, id_token, cliente_id)
+#     return jsonify(charges)
 
 
 @app.route("/webhook/efi", methods=["POST"])
