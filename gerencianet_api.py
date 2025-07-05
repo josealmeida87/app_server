@@ -89,3 +89,17 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
 
     except Exception as e:
         return {"error": "Exceção durante a criação da cobrança", "detalhes": str(e)}
+
+
+def registrar_webhook_pix(access_token, chave_pix, endpoint_publico):
+    url = f"https://pix-h.api.efipay.com.br/v2/webhook/{chave_pix}"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "webhookUrl": f"{endpoint_publico}/webhook/efi"
+    }
+    response = requests.put(url, headers=headers, json=payload, cert=("seu_cert.pem", "sua_chave.pem"))
+    print("Resposta:", response.status_code, response.text)
+
