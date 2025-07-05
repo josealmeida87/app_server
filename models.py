@@ -1,17 +1,15 @@
 import json
 import os
-import sys
+# import sys
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # from firebase.firebase_auth import PROJECT_ID
 load_dotenv()
+project_id = os.getenv("PROJECT_ID")
 
 def save_charge(uid, id_token, cliente_id, charge_data):
-    
-    project_id = PROJECT_ID
-    project_id = os.getenv(PROJECT_ID)
     txid = charge_data["txid"]
     url = (
         f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents"
@@ -72,7 +70,7 @@ def save_charge(uid, id_token, cliente_id, charge_data):
 
 def atualizar_status_cobranca_por_txid(txid, novo_status="pago"):
     print(f"[WEBHOOK] Atualizando txid {txid} para status '{novo_status}'")
-    url = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents:runQuery"
+    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents:runQuery"
 
     # Consulta Firestore com where txid == 'valor'
     payload = {
