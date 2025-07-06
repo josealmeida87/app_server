@@ -11,6 +11,7 @@ app = Flask(__name__)
 def create_charge():
     try:
         data = request.json
+        print("Dados recebidos no create_charge:", data)
         uid = data["uid"]
         value = float(data["value"])
         name = data["name"]
@@ -79,4 +80,5 @@ def efi_webhook():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    from os import environ
+    app.run(debug=True, host="0.0.0.0", port=int(environ.get("PORT", 5000)))
