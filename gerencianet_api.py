@@ -22,7 +22,7 @@ key_temp.close()
 def get_access_token():
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
-    url = "https://pix-h.api.efipay.com.br/oauth/token"
+    url = "https://pix.api.efipay.com.br/oauth/token"
     cert = (cert_temp.name, key_temp.name)
     response = requests.post(
         url, 
@@ -58,7 +58,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
     }
     try:
         response = requests.put(
-            f"https://pix-h.api.efipay.com.br/v2/cob/{txid}",
+            f"https://pix.api.efipay.com.br/v2/cob/{txid}",
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json"
@@ -74,7 +74,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
                 "detalhes": response.json()
             }
         qr_response = requests.get(
-            f"https://pix-h.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
+            f"https://pix.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
             headers={"Authorization": f"Bearer {access_token}"},
             cert=(cert_temp.name, key_temp.name)
         )
