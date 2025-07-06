@@ -20,7 +20,7 @@ if not firebase_admin._apps:
     
 db = firestore.client()
 
-def save_charge(uid, id_token, cliente_id, charge_data):
+def save_charge(uid, cliente_id, charge_data):
     txid = charge_data["txid"]
     payload = db.collection("meus_clientes").document(uid)\
                 .collection("clientes_do_usuario").document(cliente_id)\
