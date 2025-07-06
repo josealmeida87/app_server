@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 from models import atualizar_status_cobranca_por_txid
 from gerencianet_api import create_pix_charge
@@ -11,7 +10,7 @@ app = Flask(__name__)
 def create_charge():
     try:
         data = request.json
-        print("Dados recebidos no create_charge:", data)
+        # print("Dados recebidos no create_charge:", data)
         uid = data["uid"]
         value = float(data["value"])
         name = data["name"]
@@ -20,10 +19,10 @@ def create_charge():
         id_token = data.get("id_token")
         cliente_id = data["cliente_id"]
         charge = create_pix_charge(value, name, desc_cobranca, identificador)
-        print("Retorno da cobrança do Gerencianet:", charge)
+        # print("Retorno da cobrança do Gerencianet:", charge)
         if charge.get("status") == "ATIVA" and "txid" in charge:
             status_code, response = save_charge(uid, cliente_id, charge)
-            print("Resposta do Firestore:", status_code, response)
+            # print("Resposta do Firestore:", status_code, response)
             return jsonify({
                 "mensagem": "Cobrança criada com sucesso",
                 "txid": charge["txid"],
