@@ -89,6 +89,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
             "txid": txid,
             "valor": value,
             "nome": client_name,
+            "solicitacaoPagador": cobranca,
             "status": data_res.get("status"),
             "br_code": qr_data.get("qrcode"),
             "qr_code_image": qr_data.get("imagemQrcode"),
