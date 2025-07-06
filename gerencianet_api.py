@@ -4,16 +4,14 @@ from datetime import datetime, timedelta
 import uuid
 from dotenv import load_dotenv
 
-load_dotenv()
-
 cert_path = os.getenv("homol_certificate.pem")
 key_path = os.getenv("homol_private_key.pem")
-
+load_dotenv()
 
 def get_access_token():
     url = "https://pix-h.api.efipay.com.br/oauth/token"
-    client_id = os.getenv("CLIENT_ID")
-    client_secret = os.getenv("CLIENT_SECRET")
+    client_id = os.getenv("SANDBOX_CLIENT_ID")
+    client_secret = os.getenv("SANDBOX_CLIENT_SECRET")
 
     response = requests.post(
         url,
@@ -102,4 +100,3 @@ def registrar_webhook_pix(access_token, chave_pix, endpoint_publico):
     }
     response = requests.put(url, headers=headers, json=payload, cert=("seu_cert.pem", "sua_chave.pem"))
     print("Resposta:", response.status_code, response.text)
-
