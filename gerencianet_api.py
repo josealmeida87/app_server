@@ -2,25 +2,33 @@ import requests
 import os
 from datetime import datetime, timedelta
 import uuid
-from dotenv import load_dotenv
+import tempfile
 
-cert_path = os.getenv("homol_certificate.pem")
-key_path = os.getenv("homol_private_key.pem")
-load_dotenv()
+cert_data = os.environ.get("CERT_PEM")
+key_data = os.environ.get("KEY_PEM")
+ if not cert_data or not key_data:
+        raise Exception("Certificados não encontrados nas variáveis de ambiente")
+
+    # Cria arquivos temporários com os certificados
+    cert_temp = tempfile.NamedTemporaryFile(delete=False)
+    key_temp = tempfile.NamedTemporaryFile(delete=False)
+    cert_temp.write(cert_data.encode())
+    key_temp.write(key_data.encode())
+    cert_temp.close()
+    key_temp.close()
 
 def get_access_token():
     url = "https://pix-h.api.efipay.com.br/oauth/token"
-    client_id = os.getenv("SANDBOX_CLIENT_ID")
-    client_secret = os.getenv("SANDBOX_CLIENT_SECRET")
+   
 
+    cert = (cert_temp.name, key_temp.name)
     response = requests.post(
         url,
-        auth=(client_id, client_secret),
-        headers={"Content-Type": "application/json"},
-        json={"grant_type": "client_credentials"},
-        cert=(cert_path, key_path)
+        headers={"Authorization": "Basic <base64_client_id_client_secret>"},
+        data={"grant_type": "client_credentials"},
+        cert=cert
     )
-    return response.json().get("access_token")
+    return response.json()["access_token"]
 
 
 def create_pix_charge(value, client_name, cobranca, identificador=None, txid=None):
@@ -53,7 +61,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
                 "Content-Type": "application/json"
             },
             json=payload,
-            cert=(os.getenv(cert_path), os.getenv(key_path))
+            cert=(cert_temp.name, key_temp.name)
         )
         data_res = response.json()
         if response.status_code != 201:
@@ -65,7 +73,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
         qr_response = requests.get(
             f"https://pix-h.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
             headers={"Authorization": f"Bearer {access_token}"},
-            cert=(os.getenv(cert_path), os.getenv(key_path))
+            cert=(cert_temp.name, key_temp.name)
         )
         if qr_response.status_code != 200:
             return {
