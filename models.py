@@ -8,9 +8,8 @@ from firebase_admin import credentials, firestore
 load_dotenv()
 
 # Inicialize com a conta de serviço
-cred = credentials.Certificate("firebase_admin.json")
+cred = credentials.Certificate.os.getenv("firebase_admin.json")
 firebase_admin.initialize_app(cred)
-project_id = os.getenv("PROJECT_ID")
 
 def save_charge(uid, id_token, cliente_id, charge_data):
     txid = charge_data["txid"]
