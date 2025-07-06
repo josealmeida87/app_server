@@ -1,5 +1,4 @@
 Flask
-tempfile
 requests
 python-dotenv
 gunicorn
