@@ -5,11 +5,11 @@ from datetime import datetime
 from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
+load_dotenv()
 
 # Inicialize com a conta de serviço
 cred = credentials.Certificate("firebase_admin.json")
 firebase_admin.initialize_app(cred)
-load_dotenv()
 project_id = os.getenv("PROJECT_ID")
 
 def save_charge(uid, id_token, cliente_id, charge_data):
