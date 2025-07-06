@@ -3,6 +3,8 @@ import os
 from datetime import datetime, timedelta
 import uuid
 import tempfile
+from dotenv import load_dotenv
+load_dotenv()
 
 cert_data = os.environ.get("CERT_PATH")
 key_data = os.environ.get("KEY_PATH")
