@@ -22,7 +22,7 @@ def create_charge():
         charge = create_pix_charge(value, name, desc_cobranca, identificador)
         print("Retorno da cobrança do Gerencianet:", charge)
         if charge.get("status") == "ATIVA" and "txid" in charge:
-            status_code, response = save_charge(uid, id_token, cliente_id, charge)
+            status_code, response = save_charge(uid, cliente_id, charge)
             print("Resposta do Firestore:", status_code, response)
             return jsonify({
                 "mensagem": "Cobrança criada com sucesso",
