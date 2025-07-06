@@ -6,11 +6,19 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, firestore
 load_dotenv()
-
-# Inicialize com a conta de serviço
-credentials = os.getenv("firebase_admin.json")
-cred = credentials.Certificate.(credentials)
-firebase_admin.initialize_app(cred)
+if not firebase_admin._apps:
+    # Inicialize com a conta de serviço
+    cred_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    if cred_json:
+        cred_dict = json.loads(cred_json)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # Ou tente carregar de arquivo físico
+        cred = credentials.Certificate("firebase_admin.json")
+    
+    firebase_admin.initialize_app(cred)
+    
+db = firestore.client()
 
 def save_charge(uid, id_token, cliente_id, charge_data):
     txid = charge_data["txid"]
