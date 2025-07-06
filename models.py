@@ -9,7 +9,7 @@ load_dotenv()
 
 # Inicialize com a conta de serviço
 credentials = os.getenv("firebase_admin.json")
-cred = credentials.Certificate.(credentials.json)
+cred = credentials.Certificate.(credentials)
 firebase_admin.initialize_app(cred)
 
 def save_charge(uid, id_token, cliente_id, charge_data):
