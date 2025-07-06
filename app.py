@@ -20,9 +20,10 @@ def create_charge():
         id_token = data.get("id_token")
         cliente_id = data["cliente_id"]
         charge = create_pix_charge(value, name, desc_cobranca, identificador)
+        print("Retorno da cobrança do Gerencianet:", charge)
         if charge.get("status") == "ATIVA" and "txid" in charge:
-            tes = save_charge(uid, id_token, cliente_id, charge)
-            print(tes)
+            status_code, response = save_charge(uid, id_token, cliente_id, charge)
+            print("Resposta do Firestore:", status_code, response)
             return jsonify({
                 "mensagem": "Cobrança criada com sucesso",
                 "txid": charge["txid"],
@@ -40,6 +41,8 @@ def create_charge():
         # return jsonify({"error": "Falha ao criar cobrança", "detalhes": res}), 400
 
     except Exception as e:
+        import traceback
+        print("Erro interno:", traceback.format_exc())
         return jsonify({"error": "Erro interno do servidor", "detalhes": str(e)}), 500
 
 
