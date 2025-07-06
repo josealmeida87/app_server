@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import uuid
 import tempfile
 
-cert_data = os.environ.get("CERT_PEM")
-key_data = os.environ.get("KEY_PEM")
+cert_data = os.environ.get("CERT_PATH")
+key_data = os.environ.get("KEY_PATH")
  if not cert_data or not key_data:
         raise Exception("Certificados não encontrados nas variáveis de ambiente")
 
