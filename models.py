@@ -1,46 +1,65 @@
 import json
 import os
-# import sys
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# from firebase.firebase_auth import PROJECT_ID
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+# Inicialize com a conta de serviço
+cred = credentials.Certificate("firebase_admin.json")
+firebase_admin.initialize_app(cred)
 load_dotenv()
 project_id = os.getenv("PROJECT_ID")
 
 def save_charge(uid, id_token, cliente_id, charge_data):
     txid = charge_data["txid"]
-    url = (
-        f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents"
-        f"/meus_clientes/{uid}/clientes_do_usuario/{cliente_id}/cobrancas/{txid}"
-    )
+    payload = db.collection("meus_clientes").document(uid)\
+                .collection("clientes_do_usuario").document(cliente_id)\
+                .collection("cobrancas").document(txid)
+    payload.set({
+        "uid": uid,
+        "txid": txid,
+        "valor": charge_data["valor"],
+        "status": "pendente",
+        "nome": charge_data["nome"],
+        "qr_code_image": charge_data["qr_code_image"],
+        "br_code": charge_data["br_code"],
+        "vencimento": charge_data["vencimento"],
+        "created_at": datetime.utcnow()
+    })
 
-    payload = {
-        "fields": {
-            "uid": {"stringValue": uid},
-            "txid": {"stringValue": txid},
-            "valor": {"doubleValue": charge_data["valor"]},
-            "status": {"stringValue": "pendente"},
-            "nome": {"stringValue": charge_data["nome"]},
-            "qr_code_image": {"stringValue": charge_data["qr_code_image"]},
-            "br_code": {"stringValue": charge_data["br_code"]},
-            "vencimento": {"timestampValue": charge_data["vencimento"].isoformat() + "Z"},
-            "created_at": {"timestampValue": datetime.utcnow().isoformat() + "Z"}
-        }
-    }
+    return 200, {"message": "Salvo com sucesso"}
+    # url = (
+    #     f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents"
+    #     f"/meus_clientes/{uid}/clientes_do_usuario/{cliente_id}/cobrancas/{txid}"
+    # )
 
-    headers = {
-        "Authorization": f"Bearer {id_token}",
-        "Content-Type": "application/json"
-    }
+    # payload = {
+    #     "fields": {
+    #         "uid": {"stringValue": uid},
+    #         "txid": {"stringValue": txid},
+    #         "valor": {"doubleValue": charge_data["valor"]},
+    #         "status": {"stringValue": "pendente"},
+    #         "nome": {"stringValue": charge_data["nome"]},
+    #         "qr_code_image": {"stringValue": charge_data["qr_code_image"]},
+    #         "br_code": {"stringValue": charge_data["br_code"]},
+    #         "vencimento": {"timestampValue": charge_data["vencimento"].isoformat() + "Z"},
+    #         "created_at": {"timestampValue": datetime.utcnow().isoformat() + "Z"}
+    #     }
+    # }
 
-    response = requests.patch(url, headers=headers, json=payload)
+    # headers = {
+    #     "Authorization": f"Bearer {id_token}",
+    #     "Content-Type": "application/json"
+    # }
 
-    try:
-        return response.status_code, response.json()
-    except ValueError:
-        return response.status_code, {"error": "Resposta vazia ou inválida", "text": response.text}
+    # response = requests.patch(url, headers=headers, json=payload)
+
+    # try:
+    #     return response.status_code, response.json()
+    # except ValueError:
+    #     return response.status_code, {"error": "Resposta vazia ou inválida", "text": response.text}
 
 
 # def get_charges(uid, id_token, cliente_id):
