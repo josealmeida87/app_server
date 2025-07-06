@@ -18,12 +18,13 @@ cert_temp.close()
 key_temp.close()
 
 def get_access_token():
+    client_id = os.getenv("CLIENT_ID")
+    client_secret = os.getenv("CLIENT_SECRET")
     url = "https://pix-h.api.efipay.com.br/oauth/token"
-   
-
     cert = (cert_temp.name, key_temp.name)
     response = requests.post(
-        url,
+        url, 
+        auth=(client_id, client_secret),
         headers={"Authorization": "Basic <base64_client_id_client_secret>"},
         data={"grant_type": "client_credentials"},
         cert=cert
