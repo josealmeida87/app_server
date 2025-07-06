@@ -6,16 +6,16 @@ import tempfile
 
 cert_data = os.environ.get("CERT_PATH")
 key_data = os.environ.get("KEY_PATH")
- if not cert_data or not key_data:
-        raise Exception("Certificados não encontrados nas variáveis de ambiente")
+if not cert_data or not key_data:
+    raise Exception("Certificados não encontrados nas variáveis de ambiente")
 
-    # Cria arquivos temporários com os certificados
-    cert_temp = tempfile.NamedTemporaryFile(delete=False)
-    key_temp = tempfile.NamedTemporaryFile(delete=False)
-    cert_temp.write(cert_data.encode())
-    key_temp.write(key_data.encode())
-    cert_temp.close()
-    key_temp.close()
+# Cria arquivos temporários com os certificados
+cert_temp = tempfile.NamedTemporaryFile(delete=False)
+key_temp = tempfile.NamedTemporaryFile(delete=False)
+cert_temp.write(cert_data.encode())
+key_temp.write(key_data.encode())
+cert_temp.close()
+key_temp.close()
 
 def get_access_token():
     url = "https://pix-h.api.efipay.com.br/oauth/token"
