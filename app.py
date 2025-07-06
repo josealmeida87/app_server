@@ -29,6 +29,7 @@ def create_charge():
                 "txid": charge["txid"],
                 "valor": charge["valor"],
                 "status": charge["status"],
+                "solicitacaoPagador": charge["solicitacaoPagador"],
                 "br_code": charge["br_code"],
                 "nome": charge["nome"],
                 "qr_code_image": charge["qr_code_image"],
