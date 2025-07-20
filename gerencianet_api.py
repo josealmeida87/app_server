@@ -120,15 +120,33 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
         return {"error": "Exceção durante a criação da cobrança", "detalhes": str(e)}
 
 
-def registrar_webhook_pix(access_token, chave_pix, endpoint_publico):
-    # url = f"https://pix.api.efipay.com.br/v2/webhook/{chave_pix}"
-    url = f"https://pix-h.api.efipay.com.br/v2/webhook/{chave_pix}"
+def registrar_webhook_pix():
+    access_token = get_access_token()
+    # url = "https://pix.api.efipay.com.br/v2/webhook/pix"
+    url = "https://pix-h.api.efipay.com.br/v2/webhook/pix"
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-skip-mtls-checking": "false"
     }
     payload = {
-        "webhookUrl": f"{endpoint_publico}/webhook/efi"
+        "webhookUrl": os.getenv("WEBHOOK_URL", "api_base/webhook/efi"),
+        "chave": os.getenv("PIX_KEY")
     }
-    response = requests.put(url, headers=headers, json=payload, cert=("seu_cert.pem", "sua_chave.pem"))
-    print("Resposta:", response.status_code, response.text)
+    try:
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            cert=efi_p12_path
+        )
+        if response.status_code == 201:
+            print("[CONFIG WEBHOOK] Webhook configurado com sucesso:", response.json())
+            return True
+        else:
+            print("[CONFIG WEBHOOK] Falha ao configurar webhook:", response.status_code, response.text)
+            return False
+    except Exception as e:
+        print("[CONFIG WEBHOOK] Erro ao configurar webhook:", str(e))
+        return False
+
