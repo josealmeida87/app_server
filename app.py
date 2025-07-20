@@ -3,7 +3,9 @@ from models import atualizar_status_cobranca_por_txid, save_charge #, get_charge
 from gerencianet_api import create_pix_charge, registrar_webhook_pix
 import ssl
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 
 def configure_ssl_context():
