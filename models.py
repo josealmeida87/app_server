@@ -68,7 +68,8 @@ def save_charge(uid, cliente_id, charge_data):
 
 def registrar_webhook_pix():
     access_token = get_access_token()
-    url = "https://pix.api.efipay.com.br/v2/webhook/pix"
+    # url = "https://pix.api.efipay.com.br/v2/webhook/pix"
+    url = "https://pix-h.api.efipay.com.br/v2/webhook/pix"
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
