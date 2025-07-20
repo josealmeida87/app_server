@@ -1,10 +1,20 @@
 from flask import Flask, request, jsonify
-from models import atualizar_status_cobranca_por_txid
-from gerencianet_api import create_pix_charge
-from models import save_charge #, get_charges
+from models import atualizar_status_cobranca_por_txid, save_charge #, get_charges
+from gerencianet_api import create_pix_charge, registrar_webhook_pix
+import ssl
+import os
 
 app = Flask(__name__)
 
+def configure_ssl_context():
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.verify_mode = ssl.CERT_REQUIRED
+    efi_cert_path = os.getenv("EFI_PUBLIC_CERT_PATH", "caminho/certificado-publico-efi.crt")
+    if not os.path.exists(efi_cert_path):
+        raise Exception(f"Certificado público da Efí não encontrado em {efi_cert_path}")
+    context.load_verify_locations(efi_cert_path)
+    return context
 
 @app.route("/create_charge", methods=["POST"])
 def create_charge():
@@ -55,33 +65,52 @@ def create_charge():
 @app.route("/webhook/efi", methods=["POST"])
 def efi_webhook():
     try:
+        # No Render, HTTPS é gerenciado pelo proxy, mas validamos mTLS
+        if not hasattr(request, 'socket') or not request.socket.authorized:
+            print("[WEBHOOK] Requisição não autorizada (mTLS falhou)")
+            return jsonify({"error": "Não autorizado"}), 401
+
         data = request.get_json()
         print("[WEBHOOK] Dados recebidos:", data)
 
-        pix = data.get("pix", [])
-        if not pix:
+        pix_events = data.get("pix", []) if isinstance(data.get("pix"), list) else [data.get("pix")] if data.get("pix") else []
+        if not pix_events:
+            print("[WEBHOOK] Sem eventos Pix no payload")
             return jsonify({"mensagem": "Sem dados de pagamento."}), 200
 
-        for evento in pix:
+        for evento in pix_events:
             txid = evento.get("txid")
             valor = evento.get("valor")
             horario = evento.get("horario")
-            print(f"[WEBHOOK] Pagamento recebido: TXID={txid} | Valor={valor} | Horário={horario}")
+            status = evento.get("status", "DESCONHECIDO").upper()
+
+            print(f"[WEBHOOK] Evento recebido: TXID={txid} | Valor={valor} | Status={status} | Horário={horario}")
 
             if txid:
-                sucesso = atualizar_status_cobranca_por_txid(txid, novo_status="pago")
+                novo_status = "pago" if status == "CONCLUIDA" else status.lower()
+                sucesso = atualizar_status_cobranca_por_txid(txid, novo_status=novo_status)
                 if not sucesso:
-                    print(f"[WEBHOOK] Não foi possível atualizar cobrança com TXID: {txid}")
+                    print(f"[WEBHOOK] Falha ao atualizar cobrança com TXID: {txid}")
             else:
                 print("[WEBHOOK] Evento sem txid.")
 
         return jsonify({"mensagem": "Webhook processado com sucesso."}), 200
-
     except Exception as e:
-        print("Erro no webhook:", e)
+        import traceback
+        print("[WEBHOOK] Erro no webhook:", traceback.format_exc())
         return jsonify({"error": "Erro interno no servidor", "detalhes": str(e)}), 500
 
+@app.route("/configure_webhook", methods=["POST"])
+def configure_webhook():
+    try:
+        success = registrar_webhook_pix()
+        return jsonify({"mensagem": "Webhook configurado com sucesso" if success else "Falha ao configurar webhook"}), 200 if success else 500
+    except Exception as e:
+        print("[CONFIG WEBHOOK] Erro:", str(e))
+        return jsonify({"error": "Erro ao configurar webhook", "detalhes": str(e)}), 500
 
 if __name__ == "__main__":
-    from os import environ
-    app.run(debug=True, host="0.0.0.0", port=int(environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 8080))  # Render usa porta 8080 por padrão
+    if os.environ.get("FLASK_ENV") != "development":
+        registrar_webhook_pix()  # Configura webhook na inicialização
+    app.run(debug=os.environ.get("FLASK_ENV") == "development", host="0.0.0.0", port=port)
