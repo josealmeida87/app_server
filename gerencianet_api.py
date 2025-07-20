@@ -62,8 +62,17 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
         "solicitacaoPagador": f"{cobranca}"
     }
     try:
+        # response = requests.put(
+        #     f"https://pix.api.efipay.com.br/v2/cob/{txid}",
+        #     headers={
+        #         "Authorization": f"Bearer {access_token}",
+        #         "Content-Type": "application/json"
+        #     },
+        #     json=payload,
+        #     cert=(cert_temp.name, key_temp.name)
+        # )
         response = requests.put(
-            f"https://pix.api.efipay.com.br/v2/cob/{txid}",
+            f"https://pix-h.api.efipay.com.br/v2/cob/{txid}",
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json"
