@@ -10,7 +10,7 @@ def configure_ssl_context():
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.minimum_version = ssl.TLSVersion.TLSv1_2
     context.verify_mode = ssl.CERT_REQUIRED
-    efi_cert_path = os.getenv("EFI_PUBLIC_CERT_PATH", "caminho/certificado-publico-efi.crt")
+    efi_cert_path = os.getenv("EFI_PUBLIC_CERT_PATH")
     if not os.path.exists(efi_cert_path):
         raise Exception(f"Certificado público da Efí não encontrado em {efi_cert_path}")
     context.load_verify_locations(efi_cert_path)
