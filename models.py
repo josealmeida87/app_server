@@ -66,32 +66,22 @@ def save_charge(uid, cliente_id, charge_data):
 #         return []
 
 
-def registrar_webhook_pix():
-    access_token = get_access_token()
-    # url = "https://pix.api.efipay.com.br/v2/webhook/pix"
-    url = "https://pix-h.api.efipay.com.br/v2/webhook/pix"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json",
-        "x-skip-mtls-checking": "false"
-    }
-    payload = {
-        "webhookUrl": os.getenv("WEBHOOK_URL", "api_base/webhook/efi"),
-        "chave": os.getenv("PIX_KEY")
-    }
+def atualizar_status_cobranca_por_txid(txid, novo_status="pago"):
+    print(f"[WEBHOOK] Atualizando txid {txid} para status '{novo_status}'")
     try:
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload,
-            cert=efi_p12_path
-        )
-        if response.status_code == 201:
-            print("[CONFIG WEBHOOK] Webhook configurado com sucesso:", response.json())
-            return True
-        else:
-            print("[CONFIG WEBHOOK] Falha ao configurar webhook:", response.status_code, response.text)
-            return False
+        query = db.collection_group("cobrancas").where("txid", "==", txid).limit(1)
+        docs = query.stream()
+        
+        atualizado = False
+        for doc in docs:
+            doc_ref = doc.reference
+            doc_ref.update({"status": novo_status})
+            print(f"[WEBHOOK] Status atualizado com sucesso para '{novo_status}' em {doc_ref.path}")
+            atualizado = True
+        
+        if not atualizado:
+            print(f"[WEBHOOK] Nenhum documento encontrado com txid: {txid}")
+        return atualizado
     except Exception as e:
-        print("[CONFIG WEBHOOK] Erro ao configurar webhook:", str(e))
+        print(f"[WEBHOOK] Erro ao atualizar status: {str(e)}")
         return False
