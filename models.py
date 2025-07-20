@@ -68,54 +68,20 @@ def save_charge(uid, cliente_id, charge_data):
 
 def atualizar_status_cobranca_por_txid(txid, novo_status="pago"):
     print(f"[WEBHOOK] Atualizando txid {txid} para status '{novo_status}'")
-    url = f"https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents:runQuery"
-
-    # Consulta Firestore com where txid == 'valor'
-    payload = {
-        "structuredQuery": {
-            "from": [{"collectionId": "cobrancas"}],
-            "where": {
-                "fieldFilter": {
-                    "field": {"fieldPath": "txid"},
-                    "op": "EQUAL",
-                    "value": {"stringValue": txid}
-                }
-            }
-        }
-    }
-
-    headers = {"Content-Type": "application/json"}
-
-    # 🔍 Realiza a consulta
-    res = requests.post(url, headers=headers, data=json.dumps(payload))
-    results = res.json()
-
-    if res.status_code != 200:
-        print("Erro ao consultar Firestore:", res.text)
-        return False
-
-    atualizado = False
-    for result in results:
-        doc = result.get("document")
-        if not doc:
-            continue
-
-        doc_name = doc["name"]  # caminho completo do documento
-        print(f"[WEBHOOK] Documento encontrado: {doc_name}")
-
-        # 🔄 Atualiza o campo 'status'
-        patch_payload = {
-            "fields": {
-                "status": {"stringValue": novo_status}
-            }
-        }
-        patch_url = f"https://firestore.googleapis.com/v1/{doc_name}?updateMask.fieldPaths=status"
-        patch_res = requests.patch(patch_url, headers=headers, json=patch_payload)
-
-        if patch_res.status_code == 200:
-            print(f"[WEBHOOK] Status atualizado com sucesso para '{novo_status}'")
+    try:
+        query = db.collection_group("cobrancas").where("txid", "==", txid).limit(1)
+        docs = query.stream()
+        
+        atualizado = False
+        for doc in docs:
+            doc_ref = doc.reference
+            doc_ref.update({"status": novo_status})
+            print(f"[WEBHOOK] Status atualizado com sucesso para '{novo_status}' em {doc_ref.path}")
             atualizado = True
-        else:
-            print("Erro ao atualizar status:", patch_res.text)
-
-    return atualizado
+        
+        if not atualizado:
+            print(f"[WEBHOOK] Nenhum documento encontrado com txid: {txid}")
+        return atualizado
+    except Exception as e:
+        print(f"[WEBHOOK] Erro ao atualizar status: {str(e)}")
+        return False
