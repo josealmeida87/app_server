@@ -112,7 +112,7 @@ def configure_webhook():
         return jsonify({"error": "Erro ao configurar webhook", "detalhes": str(e)}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))  # Render usa porta 8080 por padrão
+    port = int(os.environ.get("PORT", 5000))  # Render usa porta 8080 por padrão
     if os.environ.get("FLASK_ENV") != "development":
         registrar_webhook_pix()  # Configura webhook na inicialização
     app.run(debug=os.environ.get("FLASK_ENV") == "development", host="0.0.0.0", port=port)
