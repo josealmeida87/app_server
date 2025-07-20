@@ -6,8 +6,10 @@ import tempfile
 from dotenv import load_dotenv
 load_dotenv()
 
-cert_data = os.environ.get("CERT_PATH")
-key_data = os.environ.get("KEY_PATH")
+# cert_data = os.environ.get("CERT_PATH")
+# key_data = os.environ.get("KEY_PATH")
+cert_data = os.environ.get("SANDBOX_CERT_PATH")
+key_data = os.environ.get("SANDBOX_KEY_PATH")
 if not cert_data or not key_data:
     raise Exception("Certificados não encontrados nas variáveis de ambiente")
 
@@ -20,9 +22,12 @@ cert_temp.close()
 key_temp.close()
 
 def get_access_token():
-    client_id = os.getenv("CLIENT_ID")
-    client_secret = os.getenv("CLIENT_SECRET")
-    url = "https://pix.api.efipay.com.br/oauth/token"
+    # client_id = os.getenv("CLIENT_ID")
+    # client_secret = os.getenv("CLIENT_SECRET")
+    client_id = os.getenv("SANDBOX_CLIENT_ID")
+    client_secret = os.getenv("SANDBOX_CLIENT_SECRET")
+    # url = "https://pix.api.efipay.com.br/oauth/token"
+    url = "https://pix-h.api.efipay.com.br/oauth/token"
     cert = (cert_temp.name, key_temp.name)
     response = requests.post(
         url, 
@@ -73,8 +78,13 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
                 "status": response.status_code,
                 "detalhes": response.json()
             }
+        # qr_response = requests.get(
+        #     f"https://pix.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
+        #     headers={"Authorization": f"Bearer {access_token}"},
+        #     cert=(cert_temp.name, key_temp.name)
+        # )
         qr_response = requests.get(
-            f"https://pix.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
+            f"https://pix-h.api.efipay.com.br/v2/loc/{data_res['loc']['id']}/qrcode",
             headers={"Authorization": f"Bearer {access_token}"},
             cert=(cert_temp.name, key_temp.name)
         )
@@ -102,6 +112,7 @@ def create_pix_charge(value, client_name, cobranca, identificador=None, txid=Non
 
 
 def registrar_webhook_pix(access_token, chave_pix, endpoint_publico):
+    # url = f"https://pix.api.efipay.com.br/v2/webhook/{chave_pix}"
     url = f"https://pix-h.api.efipay.com.br/v2/webhook/{chave_pix}"
     headers = {
         "Authorization": f"Bearer {access_token}",
